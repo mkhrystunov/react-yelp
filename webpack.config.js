@@ -8,7 +8,9 @@ const join = path.join;
 const resolve = path.resolve;
 
 const getConfig = require('hjs-webpack');
+
 const isDev = NODE_ENV === 'development';
+const isTest = NODE_ENV === 'test';
 
 const root = resolve(__dirname);
 const src = join(root, 'src');
@@ -16,11 +18,31 @@ const modules = join(root, 'node_modules');
 const dest = join(root, 'dist');
 
 let config = getConfig({
-    isDev: isDev,
+    isDev,
     in: join(src, 'app.js'),
     out: dest,
     clearBeforeBuild: true
 });
+
+if (isTest) {
+    config.externals = {
+        'react/lib/ReactContext': true,
+        'react/lib/ExecutionEnvironment': true,
+        'react/addons': true
+    };
+
+    config.plugins = config.plugins.filter(p => {
+        const name = p.constructor.toString();
+        const fnName = name.match(/^function (.*)\((.*\))/);
+
+        const idx = [
+            'DedupePlugin',
+            'UglifyJsPlugin'
+        ].indexOf(fnName[1]);
+        return idx < 0;
+    });
+}
+
 config.resolve.root = [src, modules];
 config.resolve.alias = {
     css: join(src, 'styles'),
