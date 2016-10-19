@@ -21,6 +21,13 @@ let config = getConfig({
     out: dest,
     clearBeforeBuild: true
 });
+config.resolve.root = [src, modules];
+config.resolve.alias = {
+    css: join(src, 'styles'),
+    containers: join(src, 'containers'),
+    components: join(src, 'components'),
+    utils: join(src, 'utils')
+};
 
 const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`;
 const matchCssLoaders = /(^|!)(css-loader)($|!)/;
